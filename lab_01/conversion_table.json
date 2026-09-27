@@ -1,0 +1,26 @@
+{
+    "lengthUnits": {
+        "mm": 0.001,
+        "cm": 0.01,
+        "m": 1,
+        "km": 1000
+    },
+    "massUnits": {
+        "g": 0.001,
+        "kg": 1
+    },
+    "temperatureUnits": {
+        "c": {
+            "mult": 1,
+            "add": 0
+        },
+        "f": {
+            "mult": 1.8,
+            "add": 32
+        },
+        "k": {
+            "mult": 1,
+            "add": -273
+        }
+    }
+}
