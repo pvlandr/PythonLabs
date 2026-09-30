@@ -1,7 +1,7 @@
 [project]
-name = "labs"
+name = "toolkit"
 version = "0.1.0"
-description = "Add your description here"
+description = "Calculator and converter"
 requires-python = ">=3.12"
 dependencies = [
     "pytest>=8.4.2",

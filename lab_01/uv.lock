@@ -21,7 +21,7 @@ wheels = [
 ]
 
 [[package]]
-name = "labs"
+name = "toolkit"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
