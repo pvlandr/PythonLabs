@@ -1,6 +1,6 @@
 import json
 import pathlib
-from errors import *
+from toolkit.errors import *
 
 class UnitCategory:
     def __init__(self, name: str, base_unit_name: str, base_unit_min: float | None, base_unit_max: float | None):
@@ -29,7 +29,7 @@ class Unit:
         return (self.mult * value) + self.add
 
 def deserialize_conversions():
-    path_to_lab_folder = pathlib.Path(__file__).parent.parent
+    path_to_lab_folder = pathlib.Path(__file__).parent
     path_to_conv_table = pathlib.Path(path_to_lab_folder, "conversion_table.json")
     parsed_json = json.load(open(path_to_conv_table))
 
@@ -81,7 +81,7 @@ def deserialize_conversions():
 
 unit_categories, units = deserialize_conversions()
 
-def convert(value: float, from_unit_name: str, to_unit_name: str) -> int:
+def convert(value: float, from_unit_name: str, to_unit_name: str) -> float:
     if(from_unit_name not in units):
         raise UnitError(f"Invalid unit: {from_unit_name}")
 
