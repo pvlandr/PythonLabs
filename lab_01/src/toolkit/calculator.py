@@ -19,7 +19,7 @@ def evaluate(expr: str):
 
     return calculate(tokens)
 
-def applyOperator(num1: int | Decimal, num2: int | Decimal, operator: str):
+def apply_operator(num1: int | Decimal, num2: int | Decimal, operator: str):
     match(operator):
         case "+":
             return num1 + num2
@@ -37,26 +37,26 @@ def tokenize(expr: str) -> list[tuple[str, int | Decimal]]:
     STATE_OPERATORS = 1
 
     expr = expr.replace(" ", "") + " "
-    intPattern = "[\\+-]?[0-9]+(\\.0+)?"
-    decPattern = "[\\+-]?[0-9]+\\.[0-9]+"
+    int_pattern = "[\\+-]?[0-9]+(\\.0+)?"
+    dec_pattern = "[\\+-]?[0-9]+\\.[0-9]+"
 
     i = 0
     tokens: list[tuple[str, int | Decimal]] = []
 
     state = STATE_NUMBERS
-    currVal = ""
+    curr_val = ""
 
     while(i < len(expr)):
         ch = expr[i]
 
         if(state == STATE_NUMBERS):
-            if(ch.isdigit()) or (ch == ".") or (ch in "+-" and len(currVal) == 0):
-                currVal += ch
+            if(ch.isdigit()) or (ch == ".") or (ch in "+-" and len(curr_val) == 0):
+                curr_val += ch
                 i += 1
-            elif(len(currVal) == 0) and (ch == "("):
+            elif(len(curr_val) == 0) and (ch == "("):
                 parentheses = 1
                 i += 1
-                subExpr = ""
+                sub_expr = ""
 
                 while(i < len(expr)):
                     ch2 = expr[i]
@@ -67,36 +67,36 @@ def tokenize(expr: str) -> list[tuple[str, int | Decimal]]:
                         if(parentheses == 0):
                             break
 
-                    subExpr += ch2
+                    sub_expr += ch2
                     i += 1
 
                 if(parentheses > 0):
                     raise ValueError("Unclosed parentheses.")
 
-                tokens.append((TOKEN_NUMBER, evaluate(subExpr)))
+                tokens.append((TOKEN_NUMBER, evaluate(sub_expr)))
                 state = STATE_OPERATORS
-                currVal = ""
+                curr_val = ""
                 i += 1
                 if(expr[i] == " "):
                     break
             else:
-                if(re.fullmatch(pattern=intPattern, string=currVal)):
-                    currVal = re.sub(pattern="\\.0+", repl="", string=currVal)
-                    tokens.append((TOKEN_NUMBER, int(currVal)))
-                    currVal = ""
+                if(re.fullmatch(pattern=int_pattern, string=curr_val)):
+                    curr_val = re.sub(pattern="\\.0+", repl="", string=curr_val)
+                    tokens.append((TOKEN_NUMBER, int(curr_val)))
+                    curr_val = ""
                     state = STATE_OPERATORS
-                elif(re.fullmatch(pattern=decPattern, string=currVal)):
-                    tokens.append((TOKEN_NUMBER, Decimal(currVal)))
-                    currVal = ""
+                elif(re.fullmatch(pattern=dec_pattern, string=curr_val)):
+                    tokens.append((TOKEN_NUMBER, Decimal(curr_val)))
+                    curr_val = ""
                     state = STATE_OPERATORS
-                elif(len(currVal) == 0):
+                elif(len(curr_val) == 0):
                     raise Exception(f"Badly formatted expression: {expr}")
                 else:
-                    raise ValueError(f"Invalid number: {currVal}")
+                    raise ValueError(f"Invalid number: {curr_val}")
         elif(state == STATE_OPERATORS):
             if(ch in operators):
                 tokens.append((TOKEN_OPERATOR, ch))
-                currVal = ""
+                curr_val = ""
                 state = STATE_NUMBERS
                 i += 1
             else:
@@ -110,25 +110,25 @@ def tokenize(expr: str) -> list[tuple[str, int | Decimal]]:
     return tokens
 
 def calculate(tokens: list[tuple[str,any]]) -> int | Decimal:
-    numStack: list[int | Decimal] = []
-    opStack: list[str] = []
+    num_stack: list[int | Decimal] = []
+    op_stack: list[str] = []
 
     for (ttype, tvalue) in tokens:
         if(ttype == TOKEN_NUMBER):
-            numStack.append(tvalue)
+            num_stack.append(tvalue)
         elif(ttype == TOKEN_OPERATOR):
-            while(len(opStack) > 0 and priority[opStack[-1]] >= priority[tvalue]):
-                op = opStack.pop()
-                num2, num1 = numStack.pop(), numStack.pop()
-                numStack.append(applyOperator(num1, num2, op))
-            opStack.append(tvalue)
+            while(len(op_stack) > 0 and priority[op_stack[-1]] >= priority[tvalue]):
+                op = op_stack.pop()
+                num2, num1 = num_stack.pop(), num_stack.pop()
+                num_stack.append(apply_operator(num1, num2, op))
+            op_stack.append(tvalue)
 
-    while(len(opStack) > 0):
-        op = opStack.pop()
-        num2, num1 = numStack.pop(), numStack.pop()
-        numStack.append(applyOperator(num1, num2, op))
+    while(len(op_stack) > 0):
+        op = op_stack.pop()
+        num2, num1 = num_stack.pop(), num_stack.pop()
+        num_stack.append(apply_operator(num1, num2, op))
 
-    if(len(numStack) != 1):
+    if(len(num_stack) != 1):
         raise Exception("Num stack has leftover values")
 
-    return numStack[0]
+    return num_stack[0]
