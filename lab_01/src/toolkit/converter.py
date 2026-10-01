@@ -82,6 +82,9 @@ def deserialize_conversions():
 unit_categories, units = deserialize_conversions()
 
 def convert(value: float, from_unit_name: str, to_unit_name: str) -> float:
+    from_unit_name = from_unit_name.lower()
+    to_unit_name = to_unit_name.lower()
+
     if(from_unit_name not in units):
         raise UnitError(f"Invalid unit: {from_unit_name}")
 
