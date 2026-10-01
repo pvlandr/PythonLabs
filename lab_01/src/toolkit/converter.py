@@ -95,7 +95,7 @@ def convert(value: float, from_unit_name: str, to_unit_name: str) -> float:
     to_unit = units[to_unit_name]
 
     if(from_unit.category_name != to_unit.category_name):
-        raise UnitError(f"{from_unit} and {to_unit} are different categories")
+        raise UnitError(f"Units {from_unit} and {to_unit} are incompatible")
 
     if(to_unit.category_name not in unit_categories):
         raise UnitError(f"Invalid unit category {to_unit.category_name}")
