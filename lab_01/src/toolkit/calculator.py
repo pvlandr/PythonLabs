@@ -4,7 +4,10 @@ from decimal import Decimal
 TOKEN_NUMBER = "NUM"
 TOKEN_OPERATOR = "OP"
 
+operator_characters = ["+", "-", "*", "/"]
 operators = ["+", "-", "*", "/"]
+operators.sort(key=len, reverse=True)
+
 priority = {
     "+": 1,
     "-": 1,
@@ -28,86 +31,156 @@ def apply_operator(num1: int | Decimal, num2: int | Decimal, operator: str):
         case "*":
             return num1 * num2
         case "/":
+            if(num2 == 0):
+                raise Exception("Division by zero")
+            
             return Decimal(num1) / Decimal(num2)
 
     raise ValueError(f"Invalid operator: {operator}")
 
-def tokenize(expr: str) -> list[tuple[str, int | Decimal]]:
-    STATE_NUMBERS = 0
-    STATE_OPERATORS = 1
-
-    expr = expr.replace(" ", "") + " "
-    int_pattern = "[\\+-]?[0-9]+(\\.0+)?"
-    dec_pattern = "[\\+-]?[0-9]+\\.[0-9]+"
-
+def tokenize(expr: str) -> list[tuple[str,any]]:
+    expr = expr.replace(" ", "")
     i = 0
-    tokens: list[tuple[str, int | Decimal]] = []
+    tokens: list[tuple[str,any]] = []
+    state = 0
 
-    state = STATE_NUMBERS
-    curr_val = ""
+    if(len(expr) == 0):
+        raise Exception("Expression is empty")
 
     while(i < len(expr)):
         ch = expr[i]
 
-        if(state == STATE_NUMBERS):
-            if(ch.isdigit()) or (ch == ".") or (ch in "+-" and len(curr_val) == 0):
-                curr_val += ch
-                i += 1
-            elif(len(curr_val) == 0) and (ch == "("):
-                parentheses = 1
-                i += 1
-                sub_expr = ""
+        if(state == 0):
+            i, number = read_number(expr, i)
+            tokens.append((TOKEN_NUMBER, number))
 
-                while(i < len(expr)):
-                    ch2 = expr[i]
-                    if(ch2 == "("):
-                        parentheses += 1
-                    elif(ch2 == ")"):
-                        parentheses -= 1
-                        if(parentheses == 0):
-                            break
+            # switch to operators
+            state = 1
+        elif(state == 1):
+            i, operator = read_operator(expr, i)
+            tokens.append((TOKEN_OPERATOR, operator))
 
-                    sub_expr += ch2
-                    i += 1
-
-                if(parentheses > 0):
-                    raise ValueError("Unclosed parentheses.")
-
-                tokens.append((TOKEN_NUMBER, evaluate(sub_expr)))
-                state = STATE_OPERATORS
-                curr_val = ""
-                i += 1
-                if(expr[i] == " "):
-                    break
-            else:
-                if(re.fullmatch(pattern=int_pattern, string=curr_val)):
-                    curr_val = re.sub(pattern="\\.0+", repl="", string=curr_val)
-                    tokens.append((TOKEN_NUMBER, int(curr_val)))
-                    curr_val = ""
-                    state = STATE_OPERATORS
-                elif(re.fullmatch(pattern=dec_pattern, string=curr_val)):
-                    tokens.append((TOKEN_NUMBER, Decimal(curr_val)))
-                    curr_val = ""
-                    state = STATE_OPERATORS
-                elif(len(curr_val) == 0):
-                    raise Exception(f"Badly formatted expression: {expr}")
-                else:
-                    raise ValueError(f"Invalid number: {curr_val}")
-        elif(state == STATE_OPERATORS):
-            if(ch in operators):
-                tokens.append((TOKEN_OPERATOR, ch))
-                curr_val = ""
-                state = STATE_NUMBERS
-                i += 1
-            else:
-                raise ValueError(f"Invalid operator: {ch}")
+            # switch to numbers
+            state = 0
         else:
-            raise Exception(f"Invalid state: {state}")
-
-        if(ch == " "):
-            break
+            raise Exception(f"Invalid state: {state}. This should not be happening")
+            
+        i += 1
 
     return tokens
+
+def read_number(expr: str, i: int) -> tuple[int, int | Decimal]:
+    is_negative = False
+
+    # read sign
+    while(i < len(expr)):
+        ch = expr[i]
+
+        if(ch == "-"):
+            is_negative = not is_negative
+        elif(ch == "+"):
+            pass
+        else:
+            break
+
+        i += 1
+
+    number: int | Decimal
+    if(expr[i] == "("):
+        i, number = read_bracket(expr, i)
+    else:
+        i, number = read_number_literal(expr, i)
+
+    if(is_negative):
+        number *= -1
+    
+    return i, number
+
+def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
+    num_str = ""
+
+    while(i < len(expr)):
+        ch = expr[i]
+
+        if(ch.isdigit()):
+            num_str = num_str + ch
+        elif(ch == "."):
+            if("." in num_str):
+                raise Exception("Number contains more than one decimal point")
+
+            num_str = num_str + ch
+        elif(ch == ")"):
+            raise Exception("Closing bracket does not have a matching opening bracket")
+        elif(ch == "("):
+            raise Exception("Number is followed by an opening bracket without an operator")
+        elif(ch in operator_characters):
+            break
+        else:
+            raise Exception(f"Invalid character: {ch}")
+
+        i += 1
+
+    i -= 1
+    if(len(num_str) == 0):
+        raise Exception("Empty number")
+
+    if(num_str.startswith(".")):
+        num_str = "0" + num_str
+
+    if(num_str.endswith(".")):
+        raise Exception("Number ends with a decimal point")
+
+    int_pattern = "[\\+-]?[0-9]+(\\.0+)?"
+    dec_pattern = "[\\+-]?[0-9]+\\.[0-9]+"
+
+    number: int | Decimal
+    if(re.match(pattern=int_pattern, string=num_str)):
+        number = int(num_str)
+    elif(re.match(pattern=dec_pattern, string=num_str)):
+        number = Decimal(num_str)
+    else:
+        raise Exception(f"Badly formatted number: {num_str}")
+
+    return i, number
+
+def read_bracket(expr: str, i: int) -> tuple[int, int | Decimal]:
+    bracket_expr = ""
+
+    # skip first bracket
+    i += 1
+    open_brackets = 1
+
+    while(i < len(expr)):
+        ch = expr[i]
+        if(ch == "("):
+            open_brackets += 1
+        elif(ch == ")"):
+            open_brackets -= 1
+
+            # break before adding to bracket_expr to skip last bracket
+            if(open_brackets == 0):
+                break
+
+        bracket_expr = bracket_expr + ch
+        i += 1
+
+    if(open_brackets > 0):
+        raise Exception("Unclosed bracket")
+
+    number = evaluate(bracket_expr)
+    return i, number
+
+def read_operator(expr: str, i: int) -> tuple[int, str]:
+    for op in operators:
+        if((len(op) + i) > len(expr)):
+            continue
+
+        test_str = expr[i:i+len(op)]
+        if(test_str == op):
+            i += len(op) - 1
+            return i, op
+
+    raise Exception("Invalid operator")
 
 def calculate(tokens: list[tuple[str,any]]) -> int | Decimal:
     num_stack: list[int | Decimal] = []
