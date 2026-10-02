@@ -39,7 +39,7 @@ def apply_operator(num1: int | Decimal, num2: int | Decimal, operator: str):
     raise ValueError(f"Invalid operator: {operator}")
 
 def tokenize(expr: str) -> list[tuple[str,any]]:
-    expr = expr.replace(" ", "")
+    expr = expr.strip()
     i = 0
     tokens: list[tuple[str,any]] = []
     state = 0
@@ -50,7 +50,9 @@ def tokenize(expr: str) -> list[tuple[str,any]]:
     while(i < len(expr)):
         ch = expr[i]
 
-        if(state == 0):
+        if(ch.isspace()):
+            pass
+        elif(state == 0):
             i, number = read_number(expr, i)
             tokens.append((TOKEN_NUMBER, number))
 
@@ -113,7 +115,7 @@ def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
             raise Exception("Closing bracket does not have a matching opening bracket")
         elif(ch == "("):
             raise Exception("Number is followed by an opening bracket without an operator")
-        elif(ch in operator_characters):
+        elif(ch in operator_characters) or (ch.isspace()):
             break
         else:
             raise Exception(f"Invalid character: {ch}")
@@ -134,9 +136,9 @@ def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
     dec_pattern = "[\\+-]?[0-9]+\\.[0-9]+"
 
     number: int | Decimal
-    if(re.match(pattern=int_pattern, string=num_str)):
+    if(re.fullmatch(pattern=int_pattern, string=num_str)):
         number = int(num_str)
-    elif(re.match(pattern=dec_pattern, string=num_str)):
+    elif(re.fullmatch(pattern=dec_pattern, string=num_str)):
         number = Decimal(num_str)
     else:
         raise Exception(f"Badly formatted number: {num_str}")
