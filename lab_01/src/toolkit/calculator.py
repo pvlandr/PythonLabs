@@ -1,5 +1,6 @@
 import re
 from decimal import Decimal
+
 from toolkit.errors import *
 
 TOKEN_NUMBER = "NUM"

@@ -1,6 +1,8 @@
 import json
 import pathlib
+
 from toolkit.errors import *
+
 
 class UnitCategory:
     def __init__(self, name: str, base_unit_name: str, base_unit_min: float | None, base_unit_max: float | None):
@@ -41,7 +43,7 @@ def deserialize_conversions():
         cat_name: str = ""
         try:
             cat_name = j_unit_cat["name"]
-        except:
+        except KeyError:
             raise ConversionTableError("A unit category is missing a name")
 
         try:
@@ -60,7 +62,7 @@ def deserialize_conversions():
                 unit_name: str = ""
                 try:
                     unit_name = j_unit["name"]
-                except:
+                except KeyError:
                     raise ConversionTableError(f"A unit in category \"{cat_name}\" is missing a name")
 
                 try:
@@ -72,9 +74,9 @@ def deserialize_conversions():
                         unit_add = float(j_unit["add"])
                     unit = Unit(unit_name, cat_name, unit_mult, unit_add)
                     units[unit_name] = unit
-                except:
+                except KeyError:
                     raise ConversionTableError(f"Unit \"{unit_name}\" in category \"{cat_name}\" is missing required properties")
-        except:
+        except KeyError:
             raise ConversionTableError(f"Category \"{cat_name}\" is missing required properties")
 
     return unit_categories, units
