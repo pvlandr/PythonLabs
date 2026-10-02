@@ -5,17 +5,17 @@ import toolkit.converter
 
 parser = argparse.ArgumentParser(
     prog="python -m toolkit",
-    description="TODO",
+    description="Калькулятор и конвертер величин",
 )
 commands = parser.add_subparsers(dest="command", required=True)
 
-calc = commands.add_parser("calc", help="TODO")
-calc.add_argument("expression", help="TODO")
+calc = commands.add_parser("calc", help="Вычисляет выражение")
+calc.add_argument("expression", help="Математическое выражение")
 
-convert = commands.add_parser("convert", help="TODO")
-convert.add_argument("value", type=int, help="TODO")
-convert.add_argument("--from", dest="from_unit", required=True, help="TODO")
-convert.add_argument("--to", dest="to_unit", required=True, help="TODO")
+convert = commands.add_parser("convert", help="Переводит число в другую единицу измерения")
+convert.add_argument("value", type=int, help="Начальное число")
+convert.add_argument("--from", dest="from_unit", required=True, help="Начальная единица измерения")
+convert.add_argument("--to", dest="to_unit", required=True, help="Новая единица измерения")
 
 args = parser.parse_args()
 if args.command == "calc":
