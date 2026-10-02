@@ -1,5 +1,6 @@
 import re
 from decimal import Decimal
+from toolkit.errors import *
 
 TOKEN_NUMBER = "NUM"
 TOKEN_OPERATOR = "OP"
@@ -32,7 +33,7 @@ def apply_operator(num1: int | Decimal, num2: int | Decimal, operator: str):
             return num1 * num2
         case "/":
             if(num2 == 0):
-                raise Exception("Division by zero")
+                raise EvaluationError("Division by zero")
             
             return Decimal(num1) / Decimal(num2)
 
@@ -45,7 +46,7 @@ def tokenize(expr: str) -> list[tuple[str,any]]:
     state = 0
 
     if(len(expr) == 0):
-        raise Exception("Expression is empty")
+        raise ExpressionError("Expression is empty")
 
     while(i < len(expr)):
         ch = expr[i]
@@ -64,8 +65,6 @@ def tokenize(expr: str) -> list[tuple[str,any]]:
 
             # switch to numbers
             state = 0
-        else:
-            raise Exception(f"Invalid state: {state}. This should not be happening")
             
         i += 1
 
@@ -108,29 +107,29 @@ def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
             num_str = num_str + ch
         elif(ch == "."):
             if("." in num_str):
-                raise Exception("Number contains more than one decimal point")
+                raise NumberError("Number contains more than one decimal point")
 
             num_str = num_str + ch
         elif(ch == ")"):
-            raise Exception("Closing bracket does not have a matching opening bracket")
+            raise NumberError("Closing bracket does not have a matching opening bracket")
         elif(ch == "("):
-            raise Exception("Number is followed by an opening bracket without an operator")
+            raise NumberError("Number is followed by an opening bracket without an operator")
         elif(ch in operator_characters) or (ch.isspace()):
             break
         else:
-            raise Exception(f"Invalid character: {ch}")
+            raise NumberError(f"Invalid character: {ch}")
 
         i += 1
 
     i -= 1
     if(len(num_str) == 0):
-        raise Exception("Empty number")
+        raise NumberError("Empty number")
 
     if(num_str.startswith(".")):
         num_str = "0" + num_str
 
     if(num_str.endswith(".")):
-        raise Exception("Number ends with a decimal point")
+        raise NumberError("Number ends with a decimal point")
 
     int_pattern = "[\\+-]?[0-9]+(\\.0+)?"
     dec_pattern = "[\\+-]?[0-9]+\\.[0-9]+"
@@ -141,7 +140,7 @@ def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
     elif(re.fullmatch(pattern=dec_pattern, string=num_str)):
         number = Decimal(num_str)
     else:
-        raise Exception(f"Badly formatted number: {num_str}")
+        raise NumberError(f"Badly formatted number: {num_str}")
 
     return i, number
 
@@ -167,7 +166,7 @@ def read_bracket(expr: str, i: int) -> tuple[int, int | Decimal]:
         i += 1
 
     if(open_brackets > 0):
-        raise Exception("Unclosed bracket")
+        raise ExpressionError("Unclosed bracket")
 
     number = evaluate(bracket_expr)
     return i, number
@@ -182,7 +181,7 @@ def read_operator(expr: str, i: int) -> tuple[int, str]:
             i += len(op) - 1
             return i, op
 
-    raise Exception("Invalid operator")
+    raise ExpressionError("A number/bracket is not followed by a valid operator")
 
 def calculate(tokens: list[tuple[str,any]]) -> int | Decimal:
     num_stack: list[int | Decimal] = []
@@ -204,6 +203,6 @@ def calculate(tokens: list[tuple[str,any]]) -> int | Decimal:
         num_stack.append(apply_operator(num1, num2, op))
 
     if(len(num_stack) != 1):
-        raise Exception("Num stack has leftover values")
+        raise EvaluationError("Num stack has leftover values")
 
     return num_stack[0]
