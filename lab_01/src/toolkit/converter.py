@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from toolkit.errors import *
 
-# decimal.getcontext().prec = 10
+decimal.getcontext().prec = 10
 
 class UnitCategory:
     """Категория единиц измерения"""
@@ -18,9 +18,9 @@ class UnitCategory:
     def verify_base_unit_value(self, value: Decimal):
         """Создает ошибку, если число в основной велечине категории выходит за предел допустимых значений"""
         if(self.base_unit_min != None) and (value < self.base_unit_min):
-            raise ConversionError(f"{self.name} ({value} {self.base_unit_name}) is less than the minimum of {self.base_unit_min} {self.base_unit_name}")
+            raise ConversionError(f"{self.name} ({value} {self.base_unit_name}) ниже минимального значения {self.base_unit_min} {self.base_unit_name}")
         if(self.base_unit_max != None) and (value > self.base_unit_max):
-            raise ConversionError(f"{self.name} ({value} {self.base_unit_name}) is greater than the maximum of {self.base_unit_max} {self.base_unit_name}")
+            raise ConversionError(f"{self.name} ({value} {self.base_unit_name}) больше максимального значения {self.base_unit_max} {self.base_unit_name}")
 
 class Unit:
     def __init__(self, name: str, category_name: str, mult: Decimal, add: Decimal):
@@ -54,7 +54,7 @@ def deserialize_conversions():
         try:
             cat_name = j_unit_cat["name"]
         except KeyError:
-            raise ConversionTableError("A unit category is missing a name")
+            raise ConversionTableError("Группа величин не имеет названия")
 
         try:
             base_unit_name = j_unit_cat["base_unit_name"]
@@ -71,9 +71,9 @@ def deserialize_conversions():
             for j_unit in j_units:
                 unit_name: str = ""
                 try:
-                    unit_name = j_unit["name"]
+                    unit_name = j_unit["name"].lower()
                 except KeyError:
-                    raise ConversionTableError(f"A unit in category \"{cat_name}\" is missing a name")
+                    raise ConversionTableError(f"Единица измерения в группе \"{cat_name}\" не имеет названия")
 
                 try:
                     unit_mult = Decimal(1)
@@ -85,9 +85,9 @@ def deserialize_conversions():
                     unit = Unit(unit_name, cat_name, unit_mult, unit_add)
                     units[unit_name] = unit
                 except KeyError:
-                    raise ConversionTableError(f"Unit \"{unit_name}\" in category \"{cat_name}\" is missing required properties")
+                    raise ConversionTableError(f"Единица измерения \"{unit_name}\" в категории \"{cat_name}\" не имеет всех нужных переменных")
         except KeyError:
-            raise ConversionTableError(f"Category \"{cat_name}\" is missing required properties")
+            raise ConversionTableError(f"Категория \"{cat_name}\" не имеет всех нужных переменных")
 
     return unit_categories, units
 
@@ -99,19 +99,19 @@ def convert(value: Decimal, from_unit_name: str, to_unit_name: str) -> Decimal:
     to_unit_name = to_unit_name.lower()
 
     if(from_unit_name not in units):
-        raise UnitError(f"Invalid unit: {from_unit_name}")
+        raise UnitError(f"Неподдержанная единица измерения: {from_unit_name}")
 
     if(to_unit_name not in units):
-        raise UnitError(f"Invalid unit: {to_unit_name}")
+        raise UnitError(f"Неподдержанная единица измерения: {to_unit_name}")
 
     from_unit = units[from_unit_name]
     to_unit = units[to_unit_name]
 
     if(from_unit.category_name != to_unit.category_name):
-        raise UnitError(f"Units {from_unit} and {to_unit} are incompatible")
+        raise UnitError(f"Единицы измерения {from_unit} и {to_unit} несовместимы")
 
     if(to_unit.category_name not in unit_categories):
-        raise UnitError(f"Invalid unit category {to_unit.category_name}")
+        raise UnitError(f"Неподдержанная группа величин {to_unit.category_name}")
 
     category = unit_categories[to_unit.category_name]
     base_unit_value = from_unit.convert_to_base_unit(value)

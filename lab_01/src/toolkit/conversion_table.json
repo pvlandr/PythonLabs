@@ -1,7 +1,7 @@
 {
     "unit_categories": [
         {
-            "name": "length",
+            "name": "Длина",
             "base_unit_name": "m",
             "base_unit_min": 0,
             "units": [
@@ -24,7 +24,7 @@
             ]
         },
         {
-            "name": "mass",
+            "name": "Масса",
             "base_unit_name": "kg",
             "base_unit_min": 0,
             "units": [
@@ -39,7 +39,7 @@
             ]
         },
         {
-            "name": "temperature",
+            "name": "Температура",
             "base_unit_name": "c",
             "base_unit_min": -273,
             "units": [

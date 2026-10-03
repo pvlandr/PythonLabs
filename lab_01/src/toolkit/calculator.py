@@ -24,7 +24,6 @@ priority = {
 def evaluate(expr: str):
     """Вычесляет выражение"""
     tokens = tokenize(expr)
-    # print(tokens)
 
     return calculate(tokens)
 
@@ -39,11 +38,11 @@ def apply_operator(num1: int | Decimal, num2: int | Decimal, operator: str):
             return num1 * num2
         case "/":
             if(num2 == 0):
-                raise EvaluationError("Division by zero")
+                raise EvaluationError("Деление на 0")
             
             return Decimal(num1) / Decimal(num2)
 
-    raise ValueError(f"Invalid operator: {operator}")
+    raise ValueError(f"Неподдержанный оператор: {operator}")
 
 def tokenize(expr: str) -> list[tuple[str,any]]:
     """Токенизирует выражение"""
@@ -53,7 +52,7 @@ def tokenize(expr: str) -> list[tuple[str,any]]:
     state = 0
 
     if(len(expr) == 0):
-        raise ExpressionError("Expression is empty")
+        raise ExpressionError("Пустое выражение")
 
     while(i < len(expr)):
         ch = expr[i]
@@ -61,19 +60,29 @@ def tokenize(expr: str) -> list[tuple[str,any]]:
         if(ch.isspace()):
             pass
         elif(state == 0):
-            i, number = read_number(expr, i)
-            tokens.append((TOKEN_NUMBER, number))
+            try:
+                i, number = read_number(expr, i)
+                tokens.append((TOKEN_NUMBER, number))
 
-            # switch to operators
-            state = 1
+                state = 1
+            except EmptyNumberError:
+                if(len(tokens) > 0):
+                    raise ExpressionError("Два бинарных оператора стоят подряд")
+                else:
+                    raise ExpressionError("Выражение начинается с бинарного оператора")
         elif(state == 1):
             i, operator = read_operator(expr, i)
             tokens.append((TOKEN_OPERATOR, operator))
 
-            # switch to numbers
             state = 0
             
         i += 1
+
+    if(len(tokens) == 0):
+        raise ExpressionError("Пустое выражение")
+
+    if(tokens[-1][0] == TOKEN_OPERATOR):
+        raise ExpressionError("Выражение заканчивается на бинарный оператор") 
 
     return tokens
 
@@ -81,7 +90,6 @@ def read_number(expr: str, i: int) -> tuple[int, int | Decimal]:
     """Читает число или строку из выражения, включая знак"""
     is_negative = False
 
-    # read sign
     while(i < len(expr)):
         ch = expr[i]
 
@@ -116,29 +124,29 @@ def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
             num_str = num_str + ch
         elif(ch == "."):
             if("." in num_str):
-                raise NumberError("Number contains more than one decimal point")
+                raise NumberError("Число содержит более чем одну точку")
 
             num_str = num_str + ch
         elif(ch == ")"):
-            raise NumberError("Closing bracket does not have a matching opening bracket")
+            raise ExpressionError("Правая скобка не имеет соответствующую левую скобку")
         elif(ch == "("):
-            raise NumberError("Number is followed by an opening bracket without an operator")
+            raise ExpressionError("Числа (или скобки) не соединены оператором")
         elif(ch in operator_characters) or (ch.isspace()):
             break
         else:
-            raise NumberError(f"Invalid character: {ch}")
+            raise ExpressionError(f"Недопустимый символ: {ch}")
 
         i += 1
 
     i -= 1
     if(len(num_str) == 0):
-        raise NumberError("Empty number")
+        raise EmptyNumberError("Пустое число")
 
     if(num_str.startswith(".")):
         num_str = "0" + num_str
 
     if(num_str.endswith(".")):
-        raise NumberError("Number ends with a decimal point")
+        raise NumberError("Число заканчивается на точку")
 
     int_pattern = "[\\+-]?[0-9]+(\\.0+)?"
     dec_pattern = "[\\+-]?[0-9]+\\.[0-9]+"
@@ -149,7 +157,7 @@ def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
     elif(re.fullmatch(pattern=dec_pattern, string=num_str)):
         number = Decimal(num_str)
     else:
-        raise NumberError(f"Badly formatted number: {num_str}")
+        raise NumberError(f"Неправильно сформатированное число: {num_str}")
 
     return i, number
 
@@ -157,7 +165,6 @@ def read_bracket(expr: str, i: int) -> tuple[int, int | Decimal]:
     """Читает и вычесляет скобку из выражения, не включая знак"""
     bracket_expr = ""
 
-    # skip first bracket
     i += 1
     open_brackets = 1
 
@@ -168,7 +175,6 @@ def read_bracket(expr: str, i: int) -> tuple[int, int | Decimal]:
         elif(ch == ")"):
             open_brackets -= 1
 
-            # break before adding to bracket_expr to skip last bracket
             if(open_brackets == 0):
                 break
 
@@ -176,13 +182,29 @@ def read_bracket(expr: str, i: int) -> tuple[int, int | Decimal]:
         i += 1
 
     if(open_brackets > 0):
-        raise ExpressionError("Unclosed bracket")
+        raise ExpressionError("Левая скобка не имеет соответствующую правую скобку")
 
     number = evaluate(bracket_expr)
     return i, number
 
 def read_operator(expr: str, i: int) -> tuple[int, str]:
     """Читает оператор из выражения"""
+
+    ch = expr[i]
+
+    if(ch.isdigit()):
+        raise ExpressionError("Числа (или скобки) не соединены оператором")
+    elif(ch == "."):
+        raise ExpressionError("Неподдержанный оператор: .")
+    elif(ch == ")"):
+        raise NumberError("Правая скобка не имеет соответствующую левую скобку")
+    elif(ch == "("):
+        raise NumberError("Числа (или скобки) не соединены оператором")
+    elif(ch in operator_characters) or (ch.isspace()):
+        pass
+    else:
+        raise NumberError(f"Недопустимый символ: {ch}")
+
     for op in operators:
         if((len(op) + i) > len(expr)):
             continue
@@ -192,7 +214,7 @@ def read_operator(expr: str, i: int) -> tuple[int, str]:
             i += len(op) - 1
             return i, op
 
-    raise ExpressionError("A number/bracket is followed by an invalid operator")
+    raise ExpressionError(f"Неподдержанный оператор: {expr[i]}")
 
 def calculate(tokens: list[tuple[str,any]]) -> int | Decimal:
     """Вычесляет токенизированное выражение"""
@@ -213,8 +235,5 @@ def calculate(tokens: list[tuple[str,any]]) -> int | Decimal:
         op = op_stack.pop()
         num2, num1 = num_stack.pop(), num_stack.pop()
         num_stack.append(apply_operator(num1, num2, op))
-
-    if(len(num_stack) != 1):
-        raise EvaluationError("Num stack has leftover values")
 
     return num_stack[0]

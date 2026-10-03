@@ -1,17 +1,22 @@
+# калькулятор
 class NumberError(Exception):
-    pass
+    """Ошибка при чтении числа"""
+
+class EmptyNumberError(Exception):
+    """Ошибка при отсутствии ожидаемого числа"""
 
 class ExpressionError(Exception):
-    pass
+    """Ошибка при чтении выражения"""
 
 class EvaluationError(Exception):
-    pass
+    """Ошибка при вычислении выражения"""
 
+# конвертер
 class UnitError(Exception):
-    pass
+    """Ошибка с выбранными единицами измерений"""
 
 class ConversionError(Exception):
-    pass
+    """Ошибка при переводе числа"""
 
 class ConversionTableError(Exception):
-    pass
+    """Ошибка при чтении таблицы конвертаций"""
