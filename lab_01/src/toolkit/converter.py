@@ -5,6 +5,7 @@ from toolkit.errors import *
 
 
 class UnitCategory:
+    """Категория единиц измерения"""
     def __init__(self, name: str, base_unit_name: str, base_unit_min: float | None, base_unit_max: float | None):
         self.name = name
         self.base_unit_name = base_unit_name
@@ -12,6 +13,7 @@ class UnitCategory:
         self.base_unit_max = base_unit_max
 
     def verify_base_unit_value(self, value: float):
+        """Создает ошибку, если число в основной велечине категории выходит за предел допустимых значений"""
         if(self.base_unit_min != None) and (value < self.base_unit_min):
             raise ConversionError(f"{self.name} ({value} {self.base_unit_name}) is less than the minimum of {self.base_unit_min} {self.base_unit_name}")
         if(self.base_unit_max != None) and (value > self.base_unit_max):
@@ -25,12 +27,15 @@ class Unit:
         self.add = add
 
     def convert_to_base_unit(self, value: float):
+        """Переводит число из этой величины в основную"""
         return (value - self.add) / self.mult
 
     def convert_from_base_unit(self, value: float):
+        """Переводит число из основной величины в эту"""
         return (self.mult * value) + self.add
 
 def deserialize_conversions():
+    """Загружает единицы измерения из таблицы конвертаций"""
     path_to_lab_folder = pathlib.Path(__file__).parent
     path_to_conv_table = pathlib.Path(path_to_lab_folder, "conversion_table.json")
     parsed_json = json.load(open(path_to_conv_table))
@@ -84,6 +89,7 @@ def deserialize_conversions():
 unit_categories, units = deserialize_conversions()
 
 def convert(value: float, from_unit_name: str, to_unit_name: str) -> float:
+    """Переводит число в другую единицу измерения"""
     from_unit_name = from_unit_name.lower()
     to_unit_name = to_unit_name.lower()
 

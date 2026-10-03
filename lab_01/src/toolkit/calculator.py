@@ -19,12 +19,14 @@ priority = {
 }
 
 def evaluate(expr: str):
+    """Вычесляет выражение"""
     tokens = tokenize(expr)
     # print(tokens)
 
     return calculate(tokens)
 
 def apply_operator(num1: int | Decimal, num2: int | Decimal, operator: str):
+    """Применяет бинарный оператор к двум числам"""
     match(operator):
         case "+":
             return num1 + num2
@@ -41,6 +43,7 @@ def apply_operator(num1: int | Decimal, num2: int | Decimal, operator: str):
     raise ValueError(f"Invalid operator: {operator}")
 
 def tokenize(expr: str) -> list[tuple[str,any]]:
+    """Токенизирует выражение"""
     expr = expr.strip()
     i = 0
     tokens: list[tuple[str,any]] = []
@@ -72,6 +75,7 @@ def tokenize(expr: str) -> list[tuple[str,any]]:
     return tokens
 
 def read_number(expr: str, i: int) -> tuple[int, int | Decimal]:
+    """Читает число или строку из выражения, включая знак"""
     is_negative = False
 
     # read sign
@@ -99,6 +103,7 @@ def read_number(expr: str, i: int) -> tuple[int, int | Decimal]:
     return i, number
 
 def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
+    """Читает число из выражения, не включая знак"""
     num_str = ""
 
     while(i < len(expr)):
@@ -146,6 +151,7 @@ def read_number_literal(expr: str, i: int) -> tuple[int, int | Decimal]:
     return i, number
 
 def read_bracket(expr: str, i: int) -> tuple[int, int | Decimal]:
+    """Читает и вычесляет скобку из выражения, не включая знак"""
     bracket_expr = ""
 
     # skip first bracket
@@ -173,6 +179,7 @@ def read_bracket(expr: str, i: int) -> tuple[int, int | Decimal]:
     return i, number
 
 def read_operator(expr: str, i: int) -> tuple[int, str]:
+    """Читает оператор из выражения"""
     for op in operators:
         if((len(op) + i) > len(expr)):
             continue
@@ -182,9 +189,10 @@ def read_operator(expr: str, i: int) -> tuple[int, str]:
             i += len(op) - 1
             return i, op
 
-    raise ExpressionError("A number/bracket is not followed by a valid operator")
+    raise ExpressionError("A number/bracket is followed by an invalid operator")
 
 def calculate(tokens: list[tuple[str,any]]) -> int | Decimal:
+    """Вычесляет токенизированное выражение"""
     num_stack: list[int | Decimal] = []
     op_stack: list[str] = []
 
