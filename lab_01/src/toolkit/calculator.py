@@ -1,3 +1,4 @@
+import decimal
 import re
 from decimal import Decimal
 
@@ -5,6 +6,8 @@ from toolkit.errors import *
 
 TOKEN_NUMBER = "NUM"
 TOKEN_OPERATOR = "OP"
+
+decimal.getcontext().prec = 10
 
 operator_characters = ["+", "-", "*", "/"]
 operators = ["+", "-", "*", "/"]
