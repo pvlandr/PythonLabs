@@ -1,4 +1,5 @@
 import argparse
+from decimal import Decimal
 
 import toolkit.calculator
 import toolkit.converter
@@ -13,7 +14,7 @@ calc = commands.add_parser("calc", help="Вычисляет выражение")
 calc.add_argument("expression", help="Математическое выражение")
 
 convert = commands.add_parser("convert", help="Переводит число в другую единицу измерения")
-convert.add_argument("value", type=int, help="Начальное число")
+convert.add_argument("value", type=Decimal, help="Начальное число")
 convert.add_argument("--from", dest="from_unit", required=True, help="Начальная единица измерения")
 convert.add_argument("--to", dest="to_unit", required=True, help="Новая единица измерения")
 
