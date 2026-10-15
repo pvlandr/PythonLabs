@@ -2,6 +2,7 @@ import csv
 import json
 from datetime import datetime
 from io import TextIOWrapper
+
 from streamstats.errors import *
 
 log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]

@@ -1,5 +1,6 @@
 from streamstats.parsers import *
 
+
 def analyze_files(files: list[str], format: str, output: str, skip_invalid: bool):
     parsed_files = []
 
