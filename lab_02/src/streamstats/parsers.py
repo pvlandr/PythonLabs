@@ -2,6 +2,7 @@ import csv
 import json
 from datetime import datetime
 from io import TextIOWrapper
+from streamstats.errors import *
 
 log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
@@ -13,7 +14,7 @@ class LogEntry:
         self.message = message
 
         if(self.level not in log_levels):
-            raise Exception(f"Invalid log level: {self.level}")
+            raise InvalidEventError(f"Неправильный уровень события: {self.level}")
 
 def parse_file_with_format(file: TextIOWrapper, format: str, skip_invalid: bool | None = False) -> list[LogEntry]:
     match format:
@@ -22,7 +23,7 @@ def parse_file_with_format(file: TextIOWrapper, format: str, skip_invalid: bool 
         case "csv":
             return parse_csv_file(file)
 
-    raise Exception(f"Unsupported file format: {format}")
+    raise UnsupportedFormatError(f"Неподдерживаемый формат: {format}")
 
 def parse_jsonl_file(file: TextIOWrapper, skip_invalid: bool | None = False) -> list[LogEntry]:
     entries: list[LogEntry] = []
@@ -43,10 +44,10 @@ def parse_csv_file(file: TextIOWrapper, skip_invalid: bool | None = False) -> li
 
 def read_entry_property(d: dict, prop: str, needed_type: type):
     if(prop not in d):
-        raise Exception(f"Log entry is missing the \"{prop}\" property")
+        raise InvalidEventError(f"У события отсутствует обязательное поле {prop}")
     p = d[prop]
     if(type(p) != needed_type):
-        raise Exception(f"Log entry property \"{prop}\" is {type(p)} instead of {needed_type}")
+        raise InvalidEventError(f"Значение {p} поля {prop} неправильного типа (нужно {needed_type})")
 
     return p
 
@@ -56,6 +57,9 @@ def parse_entry(entry: dict) -> LogEntry:
     source = read_entry_property(entry, "source", str)
     message = read_entry_property(entry, "message", str)
 
-    timestamp = datetime.fromisoformat(timestamp_str)
+    try:
+        timestamp = datetime.fromisoformat(timestamp_str)
+    except ValueError:
+        raise InvalidTimestampError(f"Неверная временная метка: {timestamp_str}")
 
     return LogEntry(timestamp, level, source, message)
