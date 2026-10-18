@@ -19,7 +19,7 @@ class Report:
     num_events: int
     num_events_by_level: dict[str, int]
     num_events_by_source: dict[str, int]
-    top_5_error_critical_sources: list[str]
+    top_5_error_critical_sources: dict[str, int]
     first_timestamp: str
     last_timestamp: str
 
@@ -54,17 +54,17 @@ class Report:
             if(last_datetime == None) or (e.timestamp > last_datetime):
                 last_datetime = e.timestamp
 
-        self.first_timestamp = first_datetime.isoformat()
-        self.last_timestamp = last_datetime.isoformat()
-
         error_critical_sources_count_list: list[tuple[str, int]] = []
         for key, value in error_critical_sources_count.items():
             error_critical_sources_count_list.append((key, value))
-        error_critical_sources_count_list.sort(key=(lambda t : t[1]))
+        error_critical_sources_count_list.sort(reverse=True, key=(lambda t : t[1]))
 
-        self.top_5_error_critical_sources = []
+        self.top_5_error_critical_sources = {}
         for t in error_critical_sources_count_list[:5]:
-            self.top_5_error_critical_sources.append(t[0])
+            self.top_5_error_critical_sources[t[0]] =  t[1]
+
+        self.first_timestamp = first_datetime.isoformat()
+        self.last_timestamp = last_datetime.isoformat()
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, indent=4)
