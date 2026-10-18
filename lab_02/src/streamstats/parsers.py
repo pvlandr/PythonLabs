@@ -4,18 +4,8 @@ from datetime import datetime
 from io import TextIOWrapper
 
 from streamstats.errors import *
+from streamstats.report import *
 
-log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-
-class LogEntry:
-    def __init__(self, timestamp: datetime, level: str, source: str, message: str):
-        self.timestamp = timestamp
-        self.level = level
-        self.source = source
-        self.message = message
-
-        if(self.level not in log_levels):
-            raise InvalidEventError(f"Неправильный уровень события: {self.level}")
 
 def parse_file_with_format(file: TextIOWrapper, format: str, skip_invalid: bool | None = False) -> list[LogEntry]:
     match format:
