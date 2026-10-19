@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
 import streamstats.parsers
 from streamstats.errors import *
