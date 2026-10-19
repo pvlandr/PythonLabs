@@ -7,6 +7,7 @@ from streamstats.errors import *
 
 
 def parse_file_with_format(file: TextIOBase, file_name: str, format: str, skip_invalid: bool | None = False) -> tuple[list[streamstats.analysis.LogEntry], int]:
+    '''Считывает события из файла с форматом format'''
     match format:
         case "jsonl":
             return parse_jsonl_file(file, file_name, skip_invalid)
@@ -16,6 +17,7 @@ def parse_file_with_format(file: TextIOBase, file_name: str, format: str, skip_i
     raise UnsupportedFormatError(f"Неподдерживаемый формат: {format}")
 
 def parse_jsonl_file(file: TextIOBase, file_name: str, skip_invalid: bool | None = False) -> tuple[list[streamstats.analysis.LogEntry], int]:
+    '''Считывает события из JSONL файла'''
     entries: list[streamstats.analysis.LogEntry] = []
     skipped_events: int = 0
 
@@ -37,6 +39,7 @@ def parse_jsonl_file(file: TextIOBase, file_name: str, skip_invalid: bool | None
     return entries, skipped_events
 
 def parse_csv_file(file: TextIOBase, file_name: str, skip_invalid: bool | None = False) -> tuple[list[streamstats.analysis.LogEntry], int]:
+    '''Считывает события из CSV файла'''
     entries: list[streamstats.analysis.LogEntry] = []
     skipped_events: int = 0
     

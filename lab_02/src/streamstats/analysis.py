@@ -8,6 +8,7 @@ log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 streamstats_logger = logging.getLogger("streamstats")
 
 class LogEntry:
+    '''Событие, записанное в лог'''
     line: int
     file: str
     timestamp: datetime
@@ -36,6 +37,7 @@ class LogEntry:
             raise InvalidEventError(f"Неправильное событие на строке {self.line} файла {self.file}: Пустой источник события")
 
     def read_entry_property(self, d: dict, prop: str, needed_type: type):
+        '''Считывает поле события'''
         if(prop not in d):
             raise InvalidEventError(f"Неправильное событие на строке {self.line} файла {self.file}: У события отсутствует обязательное поле {prop}")
         p = d[prop]
@@ -45,6 +47,7 @@ class LogEntry:
         return p
 
 def read_events_from_files(files: list[str], format: str, skip_invalid: bool) -> tuple[list[LogEntry], int]:
+    '''Считывает события из списка файлов'''
     events: list[LogEntry] = []
     skipped_events = 0
 

@@ -6,6 +6,7 @@ from streamstats.errors import *
 
 
 class Report:
+    '''Отчет для лог-файлов'''
     num_events: int
     num_events_by_level: dict[str, int]
     num_events_by_source: dict[str, int]
@@ -76,11 +77,13 @@ class Report:
         return json.dumps(d, indent=4)
 
 def write_report_from_files(files: list[str], format: str, output: str, skip_invalid: bool):
+    '''Создает отчет из списка файлов и записывает его в файл output'''
     report = report_from_files(files, format, skip_invalid)
 
     with open(output, "w") as output_file:
         output_file.write(report.to_json())
 
 def report_from_files(files: list[str], format: str, skip_invalid: bool) -> Report:
+    '''Создает отчет из списка файлов'''
     events, skipped_events = read_events_from_files(files, format, skip_invalid)
     return Report(events, skipped_events)
