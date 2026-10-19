@@ -1,0 +1,6 @@
+{"timestamp":"2026-10-07T00:10:01+00:00","level":"DEBUG","source":"test1","message":"testmessage1"}
+{"timestamp":"2026-10-07T00:10:01+00:00","level":"DEBUG","source":"test1","message":"testmessage1"}
+{"timestamp":"2026-10-07T00:10:01+00:00","level":"DEBUG","source":"test1","message":"testmessage1"}
+{"timestamp":"2026-10-07T00:10:01+00:00","level":"ERROR","source":"test1","message":"testmessage1"}
+{"timestamp":"2026-10-07T00:10:02+00:00","level":"INFO","source":"test2","message":"testmessage2"}
+{"timestamp":"2026-10-07T00:10:03+00:00","level":"CRITICAL","source":"test3","message":"testmessage3"}

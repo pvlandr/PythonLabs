@@ -1,0 +1,4 @@
+timestamp,level,source,message
+2026-10-07T00:00:01+00:00,INFO,test1,testmessage1
+2026-10-07T00:00:02+00:00,DEBUG,test2,testmessage2
+2026-10-07T00:00:03+00:00,DEBUG,,testmessage3

@@ -1,0 +1,3 @@
+{"timestamp":"2026-10-07T00:00:01+00:00","level":"INFO","source":"test1","message":"testmessage1"}
+{"level":"DEBUG","source":"test2","message":"testmessage2"}
+{"timestamp":"2026-10-07T00:00:03+00:00","level":"DEBUG","source":"test3","message":"testmessage3"}

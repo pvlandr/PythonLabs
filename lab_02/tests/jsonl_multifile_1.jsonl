@@ -1,0 +1,5 @@
+{"timestamp":"2026-10-07T00:00:01+00:00","level":"WARNING","source":"test1","message":"testmessage1"}
+{"timestamp":"2026-10-07T00:00:02+00:00","level":"WARNING","source":"test2","message":"testmessage2"}
+{"timestamp":"2026-10-07T00:00:03+00:00","level":"WARNING","source":"test3","message":"testmessage3"}
+{"timestamp":"2026-10-07T00:00:03+00:00","level":"ERROR","source":"test3","message":"testmessage3"}
+{"timestamp":"2026-10-07T00:00:03+00:00","level":"ERROR","source":"test3","message":"testmessage3"}
