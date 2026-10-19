@@ -1,6 +1,6 @@
 import argparse
 
-import streamstats.analysis
+import streamstats.report
 
 parser = argparse.ArgumentParser(
     prog="python -m toolkit",
@@ -15,4 +15,4 @@ analyze.add_argument("--output", required=True, help="TODO")
 analyze.add_argument("--skip-invalid", action="store_true", help="TODO")
 
 args = parser.parse_args()
-streamstats.analysis.analyze_files(args.INPUT, args.format, args.output, args.skip_invalid)
+streamstats.report.write_report_from_files(args.INPUT, args.format, args.output, args.skip_invalid)

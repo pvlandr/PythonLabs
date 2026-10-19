@@ -1,19 +1,9 @@
 import json
 from datetime import datetime
 
+from streamstats.analysis import *
 from streamstats.errors import *
 
-log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-
-class LogEntry:
-    def __init__(self, timestamp: datetime, level: str, source: str, message: str):
-        self.timestamp = timestamp
-        self.level = level
-        self.source = source
-        self.message = message
-
-        if(self.level not in log_levels):
-            raise InvalidEventError(f"Неправильный уровень события: {self.level}")
 
 class Report:
     num_events: int
@@ -22,8 +12,12 @@ class Report:
     top_5_error_critical_sources: dict[str, int]
     first_timestamp: str
     last_timestamp: str
+    skipped_events: int
 
-    def __init__(self, events: list[LogEntry]):
+    def __init__(self, events: list[LogEntry], skipped_events: int):
+        if(len(events) == 0):
+            raise ReportError("В файлах нет правильных событий")
+
         self.num_events = len(events)
 
         self.num_events_by_level = {}
@@ -66,5 +60,27 @@ class Report:
         self.first_timestamp = first_datetime.isoformat()
         self.last_timestamp = last_datetime.isoformat()
 
+        self.skipped_events = skipped_events
+
     def to_json(self):
-        return json.dumps(self, default=lambda o: o.__dict__, indent=4)
+        d = {}
+        d["num_events"] = self.num_events
+        d["num_events_by_level"] = self.num_events_by_level
+        d["num_events_by_source"] = self.num_events_by_source
+        d["top_5_error_critical_sources"] = self.top_5_error_critical_sources
+        d["first_timestamp"] = self.first_timestamp
+        d["last_timestamp"] = self.last_timestamp
+        if(self.skipped_events > 0):
+            d["skipped_events"] = self.skipped_events
+        
+        return json.dumps(d, indent=4)
+
+def write_report_from_files(files: list[str], format: str, output: str, skip_invalid: bool):
+    report = report_from_files(files, format, skip_invalid)
+
+    with open(output, "w") as output_file:
+        output_file.write(report.to_json())
+
+def report_from_files(files: list[str], format: str, skip_invalid: bool) -> Report:
+    events, skipped_events = read_events_from_files(files, format, skip_invalid)
+    return Report(events, skipped_events)

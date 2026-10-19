@@ -12,3 +12,6 @@ class InvalidTimestampError(StreamStatsError):
 
 class CLIConfigError(StreamStatsError):
     pass
+
+class ReportError(StreamStatsError):
+    pass
