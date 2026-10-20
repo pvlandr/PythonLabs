@@ -41,7 +41,7 @@
         {
             "name": "Температура",
             "base_unit_name": "c",
-            "base_unit_min": -273,
+            "base_unit_min": "-273.15",
             "units": [
                 {
                     "name": "c",
@@ -55,7 +55,7 @@
                 {
                     "name": "k",
                     "mult": 1,
-                    "add": 273
+                    "add": "273.15"
                 }
             ]
         }
